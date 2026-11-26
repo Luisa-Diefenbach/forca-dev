@@ -7,7 +7,6 @@ export function criarApp() {
   const app = Fastify();
   app.register(cors, { origin: true });
   
-  // Registra as rotas com o prefixo /api exigido pelo contrato
   app.register(rotasPartidas, { prefix: '/api' });
 
   app.setErrorHandler((err: FastifyError, _req, reply) => {

@@ -9,6 +9,7 @@ import {
   buscarRankingTop10 
 } from '../repositories/partidas.repository.js';
 import { gerarMascara, calcularPontos, VIDAS_INICIAIS } from '../game/regras.js'
+import { prisma } from '../database/prisma.js';
 
 export function formatarPartida(p: any) {
   const tentadas = p.letrasTentadas ? [...p.letrasTentadas] : [];
@@ -75,12 +76,14 @@ export async function palpitarService(id: number, letra: string) {
 }
 
 export async function rankingService() {
-  const ranking = await buscarRankingTop10();
-  
-  return ranking.map((i: { jogador: string; pontos: number; palavra: { texto: string }; finalizadaEm: Date | null }) => ({
-    jogador: i.jogador,
-    pontos: i.pontos,
-    palavra: i.palavra.texto,
-    finalizadaEm: i.finalizadaEm ? i.finalizadaEm.toISOString() : new Date().toISOString(),
+  const ranking = await prisma.partida.findMany({
+    where: { status: 'vitoria' },
+    orderBy: { pontos: 'desc' },
+    take: 10,
+  });
+
+  return ranking.map((i) => ({
+    ...i,
+    finalizadaEm: i.finalizadaEm ? new Date(i.finalizadaEm).toISOString() : null,
   }));
 }
